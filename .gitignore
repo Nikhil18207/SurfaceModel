@@ -215,6 +215,8 @@ Thumbs.db
 # VSCode settings (optional)
 .vscode/
 
+ # Ignore virtual environment
+surface/
 
 # PyPI configuration file
 .pypirc
