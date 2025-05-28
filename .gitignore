@@ -170,5 +170,27 @@ cython_debug/
 # Ruff stuff:
 .ruff_cache/
 
+# Ignore virtual environment
+surface/
+.venv/
+
+# Ignore Python cache and build
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+
+# Ignore Jupyter checkpoints
+.ipynb_checkpoints/
+
+# Ignore large data if needed
+*.csv
+*.log
+
+# VSCode settings (optional)
+.vscode/
+
+
 # PyPI configuration file
 .pypirc
