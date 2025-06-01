@@ -100,3 +100,13 @@ sample = pd.DataFrame([{
 }])
 prediction = model.predict(sample)
 
+Examples:
+
+- ✅ POLISHED sample ➜ Predicted: POLISHED
+
+- ✅ STICKY sample ➜ Predicted: STICKY
+
+- ✅ ROUGH sample ➜ Predicted: ROUGH
+
+- ✅ SMOOTH sample ➜ Predicted: SMOOTH
+
