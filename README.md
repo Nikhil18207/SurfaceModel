@@ -63,3 +63,40 @@ XGBClassifier(
     eval_metric='mlogloss'
 )
 ```
+
+## 📊 Model Performance
+
+| Class      | Precision | Recall | F1-Score |
+|------------|-----------|--------|----------|
+| POLISHED   | 0.67      | 0.74   | 0.70     |
+| ROUGH      | 0.96      | 0.97   | 0.96     |
+| SMOOTH     | 0.87      | 0.84   | 0.85     |
+| STICKY     | 0.72      | 0.67   | 0.70     |
+
+- **Test Set Accuracy**: **84.0%**
+- **Weighted Avg F1**: `0.84`
+- **Macro Avg F1**: `0.80`
+
+---
+
+## 🖼 Visualizations
+
+- 📦 **Boxplot**: Resistance by Surface Type
+- 🔗 **Pairplot**: Feature relationships colored by class
+- 📉 **PCA & t-SNE**: Dimensionality reduction for SMOOTH surface
+- 📊 **Confusion Matrix**: Multi-class evaluation
+
+---
+
+## 🧪 Real-Time Sample Predictions
+
+```python
+sample = pd.DataFrame([{
+    'Time': 5,
+    'Resistance': 759.37,
+    'Resistance_diff': -8.03,
+    'Rolling_mean_5': 772.628,
+    'Rolling_std_5': 10.383009
+}])
+prediction = model.predict(sample)
+
