@@ -1,100 +1,59 @@
-# 🧠 Surface Recognition Using Pressure Sensor Data
+# Surface Detector AI Model
 
-This project implements a real-time machine learning pipeline for classifying surface types (e.g., glove, acrylic, metal, marble) using resistance values collected via a pressure sensor. It bridges the gap between physical sensor data and intelligent surface identification, enabling potential deployment in IoT or embedded systems (e.g., Raspberry Pi, Arduino).
+This project implements a real-time machine learning pipeline for classifying physical surface types (e.g., polished, rough, smooth, sticky) using resistance values collected via a pressure sensor over time. It bridges raw sensor data with automated surface identification, enabling deployment in IoT, robotics, or embedded systems.
 
----
+## Objective
 
-## 🎯 Objective
+- Detect the type of physical surface being contacted
+- Use only resistance and time data from a pressure sensor
+- Classify between 4 main surface categories: POLISHED, ROUGH, SMOOTH, STICKY
+- Enable deployment on Raspberry Pi, Arduino, or other microcontroller-based platforms
 
-To build a robust classifier that can distinguish between 10 different surface types based on resistance trends, and deploy the model for real-time smart surface detection.
+## Dataset Summary
 
----
+- **Total surface classes**: 4
+- **Raw Files Used**: 11 .xls files collected via pressure sensor
+- **Surfaces included**:
+  - polished surface.xls, polished surface 2.xls
+  - rough surface.xls, rough edge.xls, rough cement wall.xls, rough surface 2.xls
+  - smooth surface.xls, smooth surface 2.xls, smooth cement wall.xls
+  - sticky surface.xls, sticky surface 2.xls
+- **Merged & cleaned into**: Cleaned_Surface_Data_All.csv
+- **Total samples**: ~2056
+- **Feature columns extracted**:
+  - Resistance
+  - Resistance_diff
+  - Rolling_mean_5
+  - Rolling_std_5
+  - Time (reset from 1 per sample)
 
-## 📁 Dataset Summary
+## Preprocessing Pipeline
 
-- **10 surface classes**:  
-  `ACRYLIC`, `BUBBLEWRAP BACK`, `BUBBLEWRAP FRONT`, `CARDBOARD`, `GLASS`, `GLOVE`, `MARBLE`, `METAL`, `PAPER`, `SMOOTH WOODEN`
-- Each class has ~30–70 resistance samples
-- Data stored in `.csv` format (one file per surface)
-- Resistance ranges from **3,000 to 210,000 ohms**
+- Converted .xls files to a unified CSV
+- Dropped NaNs, unnamed columns, and outliers
+- Engineered temporal features:
+  - **Resistance_diff**: Rate of change
+  - **Rolling_mean_5**: Local trend over 5 readings
+  - **Rolling_std_5**: Local fluctuation/volatility
+- Encoded surface labels using LabelEncoder
+- Applied SMOTE for class balancing
 
----
+## Model Training & Architecture
 
-## 🔧 Preprocessing Pipeline
-
-- Replaced `"?"` with `NaN`, removed all-NaN and `Unnamed` columns
-- Removed outliers with resistance > 50,000
-- Engineered features:
-  - `Resistance`
-  - `Resistance_diff` (Δ change)
-  - `Rolling_mean_5`
-  - `Rolling_std_5`
-- Applied **SMOTE** for class balancing
-
----
-
-## 🧠 Model Training Summary
-
-| Model         | Description                          | Accuracy (%) |
-|---------------|--------------------------------------|--------------|
-| Random Forest | Initial benchmark                    | ~26.0        |
-| XGBoost       | GPU-accelerated training             | ~69.0        |
-| Optuna Tuning | Optimized hyperparameters (GPU)      | ~70.5        |
-| + SMOTE       | Final accuracy after balancing       | **70.76 ✅**  |
-
----
-
-## 🔧 Final Optimized XGBoost Parameters (via Optuna + GPU)
-
+- **Model Used**: XGBoostClassifier
+- **Input Features**: Time, Resistance, Resistance_diff, Rolling_mean_5, Rolling_std_5
+- **Target Classes**: 4 (POLISHED, ROUGH, SMOOTH, STICKY)
+- **Hyperparameter Tuning**: Conducted via Optuna
+- **Final Training Configuration**:
 ```python
 XGBClassifier(
-    max_depth=14,
-    learning_rate=0.15,
-    n_estimators=150,
-    subsample=0.9,
-    colsample_bytree=0.8,
-    gamma=0.1,
-    reg_alpha=0.2,
-    reg_lambda=1.0,
-    tree_method='hist',
-    device='cuda',
-    eval_metric='mlogloss',
-    random_state=42
+    n_estimators=901,
+    max_depth=7,
+    learning_rate=0.2538,
+    subsample=0.7012,
+    colsample_bytree=0.6154,
+    gamma=0.4453,
+    reg_alpha=0.9734,
+    reg_lambda=0.9005,
+    eval_metric='mlogloss'
 )
-
-## 📈 Accuracy Improvement Summary
-
-| Phase         | Notes                                      |
-|---------------|--------------------------------------------|
-| Random Forest | Initial baseline (~26% accuracy)           |
-| XGBoost       |  ~69% accuracy
-| Optuna Tuning | ~70% accuracy                              |
-| SMOTE         | 70.76% accuracy ✅                         | 
-
-## 🧪 Evaluation on Unseen GLOVE_2.csv
-
-- Created a separate GLOVE_2.csv for real-world simulation
-- Model predicted GLOVE correctly for 126 out of 139 samples
-- Accuracy on GLOVE_2: 91.37%
-- Confusions mostly occurred with similar surfaces (e.g., ACRYLIC, SMOOTH WOODEN)
-
-## 🔮 Real-Time Inference
-
-Live prediction works with:
-
-```python
-sample = np.array([[resistance, diff, mean, std]])
-prediction = model.predict(sample)
-```
-✔️ Integrates well with Arduino/Raspberry Pi sensor feeds
-
-## 💾 Deployment Ready
-- Model can be saved with joblib
-- Can be embedded in a Flask API, desktop app, or microcontroller interface
-- Feature pipeline standardized for any incoming sensor data
-
-## 📌 Next Steps
-- Collect more samples per surface for even better accuracy
-- Visualize t-SNE and feature importances
-- Deploy with edge ML on Raspberry Pi
-- Try 1D CNN or LSTM for sequence-based learning
