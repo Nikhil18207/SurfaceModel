@@ -1,50 +1,55 @@
-# Surface Detector AI Model
+# 🧠 Surface Detector AI Model
 
-This project implements a real-time machine learning pipeline for classifying physical surface types (e.g., polished, rough, smooth, sticky) using resistance values collected via a pressure sensor over time. It bridges raw sensor data with automated surface identification, enabling deployment in IoT, robotics, or embedded systems.
+This project implements a **real-time machine learning pipeline** for classifying physical surface types (e.g., `polished`, `rough`, `smooth`, `sticky`) using resistance values collected from a pressure sensor over time. It bridges raw sensor data with intelligent surface classification and is designed for deployment in **IoT, robotics, or embedded systems**.
 
-## Objective
+---
 
-- Detect the type of physical surface being contacted
-- Use only resistance and time data from a pressure sensor
-- Classify between 4 main surface categories: POLISHED, ROUGH, SMOOTH, STICKY
-- Enable deployment on Raspberry Pi, Arduino, or other microcontroller-based platforms
+## 🎯 Objective
 
-## Dataset Summary
+- Detect surface types based on resistance readings from a pressure sensor.
+- Classify 4 surface categories: **POLISHED**, **ROUGH**, **SMOOTH**, **STICKY**
+- Enable real-time prediction for use in **microcontroller-based systems** (Arduino, Raspberry Pi, etc.)
 
-- **Total surface classes**: 4
-- **Raw Files Used**: 11 .xls files collected via pressure sensor
-- **Surfaces included**:
-  - polished surface.xls, polished surface 2.xls
-  - rough surface.xls, rough edge.xls, rough cement wall.xls, rough surface 2.xls
-  - smooth surface.xls, smooth surface 2.xls, smooth cement wall.xls
-  - sticky surface.xls, sticky surface 2.xls
-- **Merged & cleaned into**: Cleaned_Surface_Data_All.csv
-- **Total samples**: ~2056
-- **Feature columns extracted**:
-  - Resistance
-  - Resistance_diff
-  - Rolling_mean_5
-  - Rolling_std_5
-  - Time (reset from 1 per sample)
+---
 
-## Preprocessing Pipeline
+## 📁 Dataset Summary
 
-- Converted .xls files to a unified CSV
-- Dropped NaNs, unnamed columns, and outliers
-- Engineered temporal features:
-  - **Resistance_diff**: Rate of change
-  - **Rolling_mean_5**: Local trend over 5 readings
-  - **Rolling_std_5**: Local fluctuation/volatility
-- Encoded surface labels using LabelEncoder
-- Applied SMOTE for class balancing
+- **Surface Classes**: 4
+- **Raw Files**: 11 `.xls` sensor recordings
+  - `polished surface.xls`, `polished surface 2.xls`
+  - `rough surface.xls`, `rough cement wall.xls`, `rough surface 2.xls`, `rough edge.xls`
+  - `smooth surface.xls`, `smooth surface 2.xls`, `smooth cement wall.xls`
+  - `sticky surface.xls`, `sticky surface 2.xls`
+- **Cleaned Dataset**: `Cleaned_Surface_Data_All.csv`
+- **Features Extracted**:
+  - `Resistance`
+  - `Resistance_diff`
+  - `Rolling_mean_5`
+  - `Rolling_std_5`
+  - `Time`
 
-## Model Training & Architecture
+---
 
-- **Model Used**: XGBoostClassifier
-- **Input Features**: Time, Resistance, Resistance_diff, Rolling_mean_5, Rolling_std_5
-- **Target Classes**: 4 (POLISHED, ROUGH, SMOOTH, STICKY)
-- **Hyperparameter Tuning**: Conducted via Optuna
-- **Final Training Configuration**:
+## 🔧 Preprocessing Pipeline
+
+- Cleaned `.xls` files and standardized structure
+- Removed NaNs, dropped unused columns
+- Feature Engineering:
+  - `Resistance_diff`: First-order temporal change
+  - `Rolling_mean_5`: Smoothed trend across 5 points
+  - `Rolling_std_5`: Local volatility detection
+- Label Encoding (`LabelEncoder`)
+- Applied **SMOTE** for class balancing
+
+---
+
+## 🧠 Model Details
+
+- **Model**: XGBoostClassifier
+- **Features**: `Time`, `Resistance`, `Resistance_diff`, `Rolling_mean_5`, `Rolling_std_5`
+- **Classes**: `POLISHED`, `ROUGH`, `SMOOTH`, `STICKY`
+- **Tuning**: Hyperparameters tuned via Optuna
+
 ```python
 XGBClassifier(
     n_estimators=901,
@@ -57,3 +62,4 @@ XGBClassifier(
     reg_lambda=0.9005,
     eval_metric='mlogloss'
 )
+```
