@@ -100,6 +100,7 @@ sample = pd.DataFrame([{
 }])
 prediction = model.predict(sample)
 
+```
 Examples:
 
 - ✅ POLISHED sample ➜ Predicted: POLISHED
