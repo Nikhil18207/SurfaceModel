@@ -111,3 +111,38 @@ Examples:
 
 - ✅ SMOOTH sample ➜ Predicted: SMOOTH
 
+## Model Deployment
+
+- Final model saved using joblib:
+    ``` python
+    models/best_xgboost_model.pkl
+    ```
+---
+
+## ⚙️ Deployment Options:
+
+- Streamlit or Flask for web apps
+
+- Raspberry Pi / Arduino with USB sensor
+
+- ONNX / TFLite for embedded inference
+
+---
+
+## 🚀 Future Enhancements
+
+- 🔍 Add more surface types (e.g., foam, textured wood)
+
+- ⚡ Real-time microcontroller integration
+
+- 🧠 Lightweight models for TinyML deployment
+
+- 📈 Time-series architectures like LSTM, TCN for sequential resistance modeling
+
+## 🛠 Tech Stack
+
+- Language: Python 3.x
+
+- Libraries: pandas, xgboost, scikit-learn, imblearn, matplotlib, seaborn, joblib
+
+- GPU: NVIDIA GeForce RTX 4060 Laptop GPU
