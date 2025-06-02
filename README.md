@@ -1,7 +1,5 @@
 ## Surface Detector AI Model
 
----
-
 ## Objective
 Detect surface types based on resistance readings from a pressure sensor.  
 Classify 4 surface categories: **POLISHED**, **ROUGH**, **SMOOTH**, **STICKY**.  
