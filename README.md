@@ -1,148 +1,131 @@
-# 🧠 Surface Detector AI Model
-
-This project implements a **real-time machine learning pipeline** for classifying physical surface types (e.g., `polished`, `rough`, `smooth`, `sticky`) using resistance values collected from a pressure sensor over time. It bridges raw sensor data with intelligent surface classification and is designed for deployment in **IoT, robotics, or embedded systems**.
+## Surface Detector AI Model
 
 ---
 
-## 🎯 Objective
-
-- Detect surface types based on resistance readings from a pressure sensor.
-- Classify 4 surface categories: **POLISHED**, **ROUGH**, **SMOOTH**, **STICKY**
-- Enable real-time prediction for use in **microcontroller-based systems** (Arduino, Raspberry Pi, etc.)
+## Objective
+Detect surface types based on resistance readings from a pressure sensor.  
+Classify 4 surface categories: **POLISHED**, **ROUGH**, **SMOOTH**, **STICKY**.  
+Enable real-time prediction for use in microcontroller-based systems (Arduino, Raspberry Pi, etc.).
 
 ---
 
-## 📁 Dataset Summary
-
+## Dataset Summary
 - **Surface Classes**: 4
-- **Raw Files**: 11 `.xls` sensor recordings
-  - `polished surface.xls`, `polished surface 2.xls`
-  - `rough surface.xls`, `rough cement wall.xls`, `rough surface 2.xls`, `rough edge.xls`
-  - `smooth surface.xls`, `smooth surface 2.xls`, `smooth cement wall.xls`
-  - `sticky surface.xls`, `sticky surface 2.xls`
-- **Cleaned Dataset**: `Cleaned_Surface_Data_All.csv`
+- **Raw Files**: 11 .xls sensor recordings
+  - polished surface.xls, polished surface 2.xls
+  - rough surface.xls, rough cement wall.xls, rough surface 2.xls, rough edge.xls
+  - smooth surface.xls, smooth surface 2.xls, smooth cement wall.xls
+  - sticky surface.xls, sticky surface 2.xls
+- **Cleaned Dataset**: Cleaned_Surface_Data_All.csv
 - **Features Extracted**:
-  - `Resistance`
-  - `Resistance_diff`
-  - `Rolling_mean_5`
-  - `Rolling_std_5`
-  - `Time`
+  - Resistance
+  - Resistance_diff
+  - Rolling_mean_5
+  - Rolling_std_5
+  - Rolling_max_5
+  - Rolling_min_5
+  - Resistance_rate_change
+  - Resistance_zscore
+  - Resistance_lag1
+  - Resistance_ema_5
 
 ---
 
-## 🔧 Preprocessing Pipeline
-
-- Cleaned `.xls` files and standardized structure
+## Preprocessing Pipeline
+- Cleaned .xls files and standardized structure
 - Removed NaNs, dropped unused columns
-- Feature Engineering:
-  - `Resistance_diff`: First-order temporal change
-  - `Rolling_mean_5`: Smoothed trend across 5 points
-  - `Rolling_std_5`: Local volatility detection
-- Label Encoding (`LabelEncoder`)
-- Applied **SMOTE** for class balancing
+- **Feature Engineering**:
+  - Temporal and statistical trends using rolling windows
+  - Label Encoding (LabelEncoder)
+  - Applied SMOTE for class balancing
 
 ---
 
-## 🧠 Model Details
-
-- **Model**: XGBoostClassifier
-- **Features**: `Time`, `Resistance`, `Resistance_diff`, `Rolling_mean_5`, `Rolling_std_5`
-- **Classes**: `POLISHED`, `ROUGH`, `SMOOTH`, `STICKY`
-- **Tuning**: Hyperparameters tuned via Optuna
-
+## Model Details
+### XGBoost (Best Single Model)
+Tuned via Optuna
 ```python
 XGBClassifier(
-    n_estimators=901,
-    max_depth=7,
-    learning_rate=0.2538,
-    subsample=0.7012,
-    colsample_bytree=0.6154,
-    gamma=0.4453,
-    reg_alpha=0.9734,
-    reg_lambda=0.9005,
+    n_estimators=744,
+    max_depth=8,
+    learning_rate=0.2325,
+    subsample=0.5646,
+    colsample_bytree=0.7686,
+    gamma=0.6396,
+    reg_alpha=0.014,
+    reg_lambda=0.7028,
     eval_metric='mlogloss'
 )
 ```
-
-## 📊 Model Performance
-
-| Class      | Precision | Recall | F1-Score |
-|------------|-----------|--------|----------|
-| POLISHED   | 0.67      | 0.74   | 0.70     |
-| ROUGH      | 0.96      | 0.97   | 0.96     |
-| SMOOTH     | 0.87      | 0.84   | 0.85     |
-| STICKY     | 0.72      | 0.67   | 0.70     |
-
-- **Test Set Accuracy**: **84.0%**
-- **Weighted Avg F1**: `0.84`
-- **Macro Avg F1**: `0.80`
-
 ---
 
-## 🖼 Visualizations
-
-- 📦 **Boxplot**: Resistance by Surface Type
-- 🔗 **Pairplot**: Feature relationships colored by class
-- 📉 **PCA & t-SNE**: Dimensionality reduction for SMOOTH surface
-- 📊 **Confusion Matrix**: Multi-class evaluation
-
----
-
-## 🧪 Real-Time Sample Predictions
-
+## Voting Ensemble (Final Deployed Model)
+  - Combined Classifiers: XGBoost, LightGBM, CatBoost
+  - Voting Strategy: Soft Voting
 ```python
-sample = pd.DataFrame([{
-    'Time': 5,
-    'Resistance': 759.37,
-    'Resistance_diff': -8.03,
-    'Rolling_mean_5': 772.628,
-    'Rolling_std_5': 10.383009
-}])
-prediction = model.predict(sample)
-
+VotingClassifier(
+    estimators=[
+        ('xgb', XGBClassifier(...)),
+        ('lgb', LGBMClassifier()),
+        ('cat', CatBoostClassifier(verbose=0))
+    ],
+    voting='soft'
+)
 ```
-Examples:
+---
 
-- ✅ POLISHED sample ➜ Predicted: POLISHED
+## Model Performance (Voting Ensemble)
 
-- ✅ STICKY sample ➜ Predicted: STICKY
+| Class    | Precision | Recall | F1-Score |
+|----------|-----------|--------|----------|
+| POLISHED | 0.76      | 0.86   | 0.80     |
+| ROUGH    | 0.98      | 0.98   | 0.98     |
+| SMOOTH   | 0.92      | 0.92   | 0.92     |
+| STICKY   | 0.85      | 0.73   | 0.78     |
 
-- ✅ ROUGH sample ➜ Predicted: ROUGH
+ - Test Set Accuracy: 90.0%
+ - Weighted F1 Score: 0.8977
+ - Macro Avg F1: 0.87
 
-- ✅ SMOOTH sample ➜ Predicted: SMOOTH
-
+---
+## Visualizations
+   - Boxplot: Resistance by Surface Type
+   - Pairplot: Feature relationships colored by class
+   - PCA & t-SNE: Dimensionality reduction plots
+   -  Confusion Matrix: Multi-class performance snapshot
+   - SHAP Values: Feature importance via SHAP
+---
+## Live Feature Generator
+   - Integrated LiveFeatureGenerator that calculates:
+         - Resistance_diff, Rolling_* stats
+         - Z-score, Lag, EMA
+   - Enables real-time inference using just Time and Resistance stream input from the sensor!
+---
 ## Model Deployment
-
-- Final model saved using joblib:
-    ``` python
-    models/best_xgboost_model.pkl
+  - Final Model Saved:
+    ```python
+    models/voting_ensemble_model.pkl
     ```
+# Deployment Options:
+  - Web Interface: Streamlit / Flask
+  - IoT: Raspberry Pi or Arduino
+  - Embedded: Convert to ONNX or TFLite for edge inference
+---
+## Future Enhancements
+   - Add more surface types (e.g., foam, textured wood)
+   - Microcontroller Integration with live sensor feed
+   - TinyML Optimization (Quantized models)
+   - Time-Series Models: LSTM, GRU, TCN for sequential signals
+   - Real-time SHAP/Grad-CAM for interpretability
 ---
 
-## ⚙️ Deployment Options:
+## Tech Stack
 
-- Streamlit or Flask for web apps
-
-- Raspberry Pi / Arduino with USB sensor
-
-- ONNX / TFLite for embedded inference
-
----
-
-## 🚀 Future Enhancements
-
-- 🔍 Add more surface types (e.g., foam, textured wood)
-
-- ⚡ Real-time microcontroller integration
-
-- 🧠 Lightweight models for TinyML deployment
-
-- 📈 Time-series architectures like LSTM, TCN for sequential resistance modeling
-
-## 🛠 Tech Stack
-
-- Language: Python 3.x
-
-- Libraries: pandas, xgboost, scikit-learn, imblearn, matplotlib, seaborn, joblib
-
-- GPU: NVIDIA GeForce RTX 4060 Laptop GPU
+- Tool/Library	Purpose
+- Python, Pandas	Data Processing
+- XGBoost, LightGBM	Classification Models
+- CatBoost	Ensemble Inclusion
+- SHAP	Explainability
+- Optuna	Hyperparameter Optimization
+- SMOTE	Class Balancing
+- Matplotlib/Seaborn	Visualization
